@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Site de Metas Diárias</title>
+  <style>
+    /* RESET */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+    body {
+      background: #f0f2f5;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    /* CONTAINER PRINCIPAL */
+    .container {
+      width: 100%;
+      max-width: 900px;
+      margin: auto;
+    }
+    /* CONFIGURAÇÕES */
+    .config-container {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      width: 100%;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .config-container label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    .config-container input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    .config-container button {
+      margin-top: 10px;
+      padding: 10px;
+      width: 100%;
+      border: none;
+      border-radius: 8px;
+      background-color: #008cff;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .config-container button:hover {
+      background-color: #006fcc;
+    }
+    /* BOTÃO RESET */
+    .btn-reset {
+      background-color: #dc3545;
+      color: #fff;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      width: 100%;
+      max-width: 300px;
+    }
+    .btn-reset:hover {
+      background-color: #c82333;
+    }
+    /* TABELA */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    thead {
+      background-color: #008cff;
+      color: #fff;
+    }
+    th, td {
+      padding: 12px;
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    /* Destaque de resultado */
+    tr.win {
+      background-color: #d4edda; /* verde claro */
+    }
+    tr.loss {
+      background-color: #f8d7da; /* vermelho claro */
+    }
+    select {
+      padding: 6px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    /* RESPONSIVIDADE - tabela para telas menores */
+    @media (max-width: 600px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+        width: 100%;
+      }
+      thead tr {
+        display: none;
+      }
+      tr {
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 10px;
+      }
+      td {
+        border: none;
+        position: relative;
+        padding-left: 50%;
+        text-align: left;
+      }
+      td::before {
+        position: absolute;
+        left: 15px;
+        width: 45%;
+        white-space: nowrap;
+        font-weight: bold;
+      }
+      td:nth-of-type(1)::before { content: "Dia:"; }
+      td:nth-of-type(2)::before { content: "Capital:"; }
+      td:nth-of-type(3)::before { content: "Meta:"; }
+      td:nth-of-type(4)::before { content: "Stop:"; }
+      td:nth-of-type(5)::before { content: "Win/Loss:"; }
+      td:nth-of-type(6)::before { content: "Final:"; }
+    }
+    /* Painel de Sugestão de Entradas */
+    #sugestaoContainer {
+      background: #fff;
+      width: 100%;
+      max-width: 900px;
+      border-radius: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    /* Botões flutuantes */
+    .btn-floating {
+      position: fixed;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      border: none;
+      border-radius: 50%;
+      color: #fff;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #btnAddDayFloat {
+      background-color: #28a745;
+      bottom: 20px;
+    }
+    #btnAddDayFloat:hover {
+      background-color: #218838;
+    }
+    #btnCalculator {
+      background-color: #007bff;
+      bottom: 90px;
+    }
+    #btnCalculator:hover {
+      background-color: #0069d9;
+    }
+    /* Calculadora flutuante (modal) */
+    #calculatorModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .calculator-content {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      width: 300px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      position: relative;
+    }
+    .calculator-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .calculator-header span {
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .calculator-header button {
+      background: transparent;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    #calcDisplay {
+      width: 100%;
+      padding: 10px;
+      font-size: 20px;
+      text-align: right;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    .calculator-buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .calc-btn {
+      padding: 15px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      background: #f0f0f0;
+      cursor: pointer;
+    }
+    .calc-btn:hover {
+      background: #e0e0e0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Calculadora de Metas Diárias</h1>
+    <!-- Configurações -->
+    <div class="config-container">
+      <label for="investimentoInicial">Investimento Inicial (R$):</label>
+      <input type="number" id="investimentoInicial" step="0.01" placeholder="Ex: 1000" />
+      <label for="metaPorcentagem">Meta Diária (%):</label>
+      <input type="number" id="metaPorcentagem" step="0.1" max="10" placeholder="Máx. 10%" />
+      <label for="autoWinDays">Dias Automáticos (somente wins):</label>
+      <input type="number" id="autoWinDays" step="1" min="1" max="180" placeholder="Ex: 10" />
+      <button id="btnSalvarConfig">Salvar Configurações</button>
+    </div>
+    <button class="btn-reset" id="btnReset">Redefinir</button>
+    <!-- Tabela de dias -->
+    <table>
+      <thead>
+        <tr>
+          <th>Dia</th>
+          <th>Capital do Dia (R$)</th>
+          <th>Meta (R$)</th>
+          <th>Stop (R$)</th>
+          <th>Win/Loss</th>
+          <th>Capital Final (R$)</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaDias"></tbody>
+    </table>
+    <!-- Painel de Sugestão de Entradas -->
+    <div id="sugestaoContainer"></div>
+  </div>
+
+  <!-- Botões flutuantes -->
+  <button id="btnCalculator" class="btn-floating">Calc</button>
+  <button id="btnAddDayFloat" class="btn-floating">+</button>
+
+  <!-- Modal da Calculadora -->
+  <div id="calculatorModal">
+    <div class="calculator-content">
+      <div class="calculator-header">
+        <span>Calculadora</span>
+        <button id="btnCloseCalculator">&times;</button>
+      </div>
+      <input type="text" id="calcDisplay" disabled value="0">
+      <div class="calculator-buttons">
+        <button class="calc-btn" data-value="7">7</button>
+        <button class="calc-btn" data-value="8">8</button>
+        <button class="calc-btn" data-value="9">9</button>
+        <button class="calc-btn" data-value="/">/</button>
+        <button class="calc-btn" data-value="4">4</button>
+        <button class="calc-btn" data-value="5">5</button>
+        <button class="calc-btn" data-value="6">6</button>
+        <button class="calc-btn" data-value="*">*</button>
+        <button class="calc-btn" data-value="1">1</button>
+        <button class="calc-btn" data-value="2">2</button>
+        <button class="calc-btn" data-value="3">3</button>
+        <button class="calc-btn" data-value="-">-</button>
+        <button class="calc-btn" data-value="0">0</button>
+        <button class="calc-btn" data-value=".">.</button>
+        <button class="calc-btn" data-value="C">C</button>
+        <button class="calc-btn" data-value="+">+</button>
+        <button class="calc-btn" data-value="=">=</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ========= Dados e Armazenamento ========= */
+    const STORAGE_KEY = "metasDiariasData";
+    let dados = {
+      investimentoInicial: 1000,
+      metaPorcentagem: 4,
+      autoWinDays: 0,
+      dias: [] // Cada dia: { dia, capital, metaValor, stopValor, resultado, capitalFinal }
+    };
+
+    function carregarDados() {
+      const armazenado = localStorage.getItem(STORAGE_KEY);
+      if (armazenado) {
+        dados = JSON.parse(armazenado);
+      }
+    }
+    function salvarDados() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(dados));
+    }
+
+    /* ========= Cálculo dos Dias ========= */
+    function recalcularTodosOsDias() {
+      if (dados.dias.length === 0) return;
+      // Primeiro dia
+      dados.dias[0].capital = parseFloat(dados.investimentoInicial) || 0;
+      dados.dias[0].metaValor = dados.dias[0].capital * (parseFloat(dados.metaPorcentagem) / 100);
+      // Se for auto win, desconsidera o stop loss (exibe “–”)
+      if (dados.dias[0].dia <= dados.autoWinDays) {
+        dados.dias[0].resultado = "win";
+      }
+      if (dados.dias[0].resultado === "win") {
+        dados.dias[0].capitalFinal = dados.dias[0].capital + dados.dias[0].metaValor;
+      } else if (dados.dias[0].resultado === "loss") {
+        dados.dias[0].capitalFinal = dados.dias[0].capital - dados.dias[0].metaValor;
+      } else {
+        dados.dias[0].capitalFinal = dados.dias[0].capital;
+      }
+      // Para os demais dias
+      for (let i = 1; i < dados.dias.length; i++) {
+        let diaAnterior = dados.dias[i - 1];
+        let diaAtual = dados.dias[i];
+        diaAtual.capital = diaAnterior.capitalFinal;
+        // Se o dia for auto win, força o resultado como "win"
+        if (diaAtual.dia <= dados.autoWinDays) {
+          diaAtual.resultado = "win";
+          diaAtual.metaValor = diaAtual.capital * (parseFloat(dados.metaPorcentagem) / 100);
+        } else {
+          // Caso contrário, se não houver resultado definido, mantém em branco para escolha manual
+          if (!diaAtual.resultado) {
+            diaAtual.metaValor = diaAtual.capital * (parseFloat(dados.metaPorcentagem) / 100);
+          }
+        }
+        diaAtual.stopValor = diaAtual.metaValor;
+        if (diaAtual.resultado === "win") {
+          diaAtual.capitalFinal = diaAtual.capital + diaAtual.metaValor;
+        } else if (diaAtual.resultado === "loss") {
+          diaAtual.capitalFinal = diaAtual.capital - diaAtual.metaValor;
+        } else {
+          diaAtual.capitalFinal = diaAtual.capital;
+        }
+      }
+      salvarDados();
+    }
+
+    /* ========= Renderização da Tabela ========= */
+    function renderTabela() {
+      const tbody = document.getElementById("tabelaDias");
+      tbody.innerHTML = "";
+      dados.dias.forEach((diaObj) => {
+        const tr = document.createElement("tr");
+        // Se o dia for automático, força a classe win
+        if (diaObj.dia <= dados.autoWinDays) {
+          tr.classList.add("win");
+        } else {
+          if (diaObj.resultado === "win") {
+            tr.classList.add("win");
+          } else if (diaObj.resultado === "loss") {
+            tr.classList.add("loss");
+          }
+        }
+        // Coluna Dia
+        const tdDia = document.createElement("td");
+        tdDia.textContent = diaObj.dia;
+        tr.appendChild(tdDia);
+        // Coluna Capital
+        const tdCapital = document.createElement("td");
+        tdCapital.textContent = diaObj.capital.toFixed(2);
+        tr.appendChild(tdCapital);
+        // Coluna Meta
+        const tdMeta = document.createElement("td");
+        tdMeta.textContent = diaObj.metaValor.toFixed(2);
+        tr.appendChild(tdMeta);
+        // Coluna Stop – se dia automático, exibe “–”
+        const tdStop = document.createElement("td");
+        if (diaObj.dia <= dados.autoWinDays) {
+          tdStop.textContent = "–";
+        } else {
+          tdStop.textContent = diaObj.stopValor.toFixed(2);
+        }
+        tr.appendChild(tdStop);
+        // Coluna Win/Loss
+        const tdWinLoss = document.createElement("td");
+        const selectResultado = document.createElement("select");
+        const optionEmpty = document.createElement("option");
+        optionEmpty.value = "";
+        optionEmpty.text = "-- Selecione --";
+        const optionWin = document.createElement("option");
+        optionWin.value = "win";
+        optionWin.text = "Win";
+        const optionLoss = document.createElement("option");
+        optionLoss.value = "loss";
+        optionLoss.text = "Loss";
+        selectResultado.appendChild(optionEmpty);
+        selectResultado.appendChild(optionWin);
+        selectResultado.appendChild(optionLoss);
+        // Se for dia automático, força win e desabilita o campo
+        if (diaObj.dia <= dados.autoWinDays) {
+          selectResultado.value = "win";
+          selectResultado.disabled = true;
+        } else {
+          selectResultado.value = diaObj.resultado || "";
+          selectResultado.disabled = false;
+          selectResultado.addEventListener("change", function() {
+            diaObj.resultado = this.value;
+            recalcularTodosOsDias();
+            renderTabela();
+            renderSugestao();
+          });
+        }
+        tdWinLoss.appendChild(selectResultado);
+        tr.appendChild(tdWinLoss);
+        // Coluna Capital Final
+        const tdFinal = document.createElement("td");
+        tdFinal.textContent = diaObj.capitalFinal.toFixed(2);
+        tr.appendChild(tdFinal);
+        tbody.appendChild(tr);
+      });
+      renderSugestao();
+    }
+
+    /* ========= Sugestão de Entradas ========= */
+    function renderSugestao() {
+      const container = document.getElementById("sugestaoContainer");
+      if (dados.dias.length === 0) {
+        container.innerHTML = "";
+        return;
+      }
+      const ultimoDia = dados.dias[dados.dias.length - 1];
+      if (ultimoDia.metaValor <= 0) {
+        container.innerHTML = "";
+        return;
+      }
+      let sugestao2 = ultimoDia.metaValor / 2;
+      let sugestao3 = ultimoDia.metaValor / 3;
+      let sugestao4 = ultimoDia.metaValor / 4;
+      let sugestao5 = ultimoDia.metaValor / 5;
+      container.innerHTML = `<h3>Sugestão de Entradas para o Dia ${ultimoDia.dia}</h3>
+        <p>2 entradas: R$${sugestao2.toFixed(2)}</p>
+        <p>3 entradas: R$${sugestao3.toFixed(2)}</p>
+        <p>4 entradas: R$${sugestao4.toFixed(2)}</p>
+        <p>5 entradas: R$${sugestao5.toFixed(2)}</p>`;
+    }
+
+    /* ========= Adiciona um Novo Dia ========= */
+    function adicionarDia() {
+      const novoDiaNumero = dados.dias.length + 1;
+      const novoDia = {
+        dia: novoDiaNumero,
+        capital: 0,
+        metaValor: 0,
+        stopValor: 0,
+        resultado: "",
+        capitalFinal: 0
+      };
+      dados.dias.push(novoDia);
+      recalcularTodosOsDias();
+      renderTabela();
+    }
+
+    /* ========= Função para Popular Dias Automáticos ========= */
+    function populateAutoWinDays(autoDays) {
+      // Converte autoDays para inteiro
+      autoDays = parseInt(autoDays) || 0;
+      dados.autoWinDays = autoDays;
+      // Se já houver menos dias que o desejado, adiciona novos dias com win
+      while(dados.dias.length < autoDays) {
+        const novoDiaNumero = dados.dias.length + 1;
+        const novoDia = {
+          dia: novoDiaNumero,
+          capital: 0,
+          metaValor: 0,
+          stopValor: 0,
+          resultado: "win",
+          capitalFinal: 0
+        };
+        dados.dias.push(novoDia);
+      }
+      // Para os dias existentes que sejam automáticos, força o resultado para "win"
+      for (let i = 0; i < dados.dias.length; i++) {
+        if(dados.dias[i].dia <= autoDays) {
+          dados.dias[i].resultado = "win";
+        }
+      }
+      recalcularTodosOsDias();
+      renderTabela();
+    }
+
+    /* ========= Eventos ========= */
+    document.getElementById("btnSalvarConfig").addEventListener("click", function() {
+      const inv = document.getElementById("investimentoInicial").value;
+      const meta = document.getElementById("metaPorcentagem").value;
+      const autoWin = document.getElementById("autoWinDays").value;
+      if (inv) dados.investimentoInicial = parseFloat(inv);
+      if (meta) dados.metaPorcentagem = parseFloat(meta);
+      // Se definido, popula os dias automáticos
+      if (autoWin) {
+        populateAutoWinDays(autoWin);
+      } else {
+        dados.autoWinDays = 0;
+      }
+      recalcularTodosOsDias();
+      renderTabela();
+    });
+
+    document.getElementById("btnReset").addEventListener("click", function() {
+      if (confirm("Deseja realmente redefinir todos os dados?")) {
+        localStorage.removeItem(STORAGE_KEY);
+        dados = { investimentoInicial: 1000, metaPorcentagem: 4, autoWinDays: 0, dias: [] };
+        document.getElementById("investimentoInicial").value = dados.investimentoInicial;
+        document.getElementById("metaPorcentagem").value = dados.metaPorcentagem;
+        document.getElementById("autoWinDays").value = "";
+        adicionarDia();
+      }
+    });
+
+    document.getElementById("btnAddDayFloat").addEventListener("click", function() {
+      adicionarDia();
+    });
+
+    /* ========= Calculadora ========= */
+    const calculatorModal = document.getElementById("calculatorModal");
+    document.getElementById("btnCalculator").addEventListener("click", function() {
+      calculatorModal.style.display = "flex";
+    });
+    document.getElementById("btnCloseCalculator").addEventListener("click", function() {
+      calculatorModal.style.display = "none";
+    });
+    const calcDisplay = document.getElementById("calcDisplay");
+    let calcExpression = "";
+    document.querySelectorAll(".calc-btn").forEach(btn => {
+      btn.addEventListener("click", function() {
+        const value = this.getAttribute("data-value");
+        if (value === "C") {
+          calcExpression = "";
+          calcDisplay.value = "0";
+        } else if (value === "=") {
+          try {
+            calcExpression = eval(calcExpression).toString();
+            calcDisplay.value = calcExpression;
+          } catch (e) {
+            calcDisplay.value = "Erro";
+            calcExpression = "";
+          }
+        } else {
+          calcExpression += value;
+          calcDisplay.value = calcExpression;
+        }
+      });
+    });
+
+    window.addEventListener("load", () => {
+      carregarDados();
+      if (dados.dias.length === 0) {
+        adicionarDia();
+      }
+      document.getElementById("investimentoInicial").value = dados.investimentoInicial;
+      document.getElementById("metaPorcentagem").value = dados.metaPorcentagem;
+      document.getElementById("autoWinDays").value = dados.autoWinDays || "";
+      recalcularTodosOsDias();
+      renderTabela();
+    });
+  </script>
+</body>
+</html>
